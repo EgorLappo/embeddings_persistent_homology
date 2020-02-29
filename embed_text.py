@@ -13,7 +13,7 @@ from transformers import BertTokenizer, BertModel
 import argparse
 parser = argparse.ArgumentParser(description="embed the text as a point cloud in the embedding space")
 parser.add_argument('text', help='input text file')
-parser.add_argument('-s', '--save_numpy', action="store_true", "save vectors in numpy format")
+parser.add_argument('-s', '--save_numpy', action="store_true", help="save vectors in numpy format")
 args = parser.parse_args()
 
 

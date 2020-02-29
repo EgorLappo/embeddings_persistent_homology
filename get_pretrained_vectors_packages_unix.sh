@@ -1,6 +1,6 @@
 sudo apt-get install git-lfs
 git lfs install
-git clone https://github.com/mmihaltz/word2vec-GoogleNews-vectors.git
+git lfs clone https://github.com/mmihaltz/word2vec-GoogleNews-vectors.git
 mv word2vec-GoogleNews-vectors/GoogleNews-vectors-negative300.bin.gz .
 rm -rf word2vec-GoogleNews-vectors
 
