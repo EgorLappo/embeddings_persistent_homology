@@ -10,6 +10,11 @@ from allennlp.commands.elmo import ElmoEmbedder
 import torch
 from transformers import BertTokenizer, BertModel
 
+import multiprocessing
+
+import persim
+from ripser import ripser
+
 import argparse
 parser = argparse.ArgumentParser(description="embed the text as a point cloud in the embedding space")
 parser.add_argument('text', help='input text file')
@@ -128,3 +133,29 @@ if __name__ == "__main__":
     vectors_to_plex(glove_wiki_embeddings, filename="plex_input/"+text_filename+".glove_wiki_plex")
     vectors_to_plex(elmo_embeddings, filename="plex_input/"+text_filename+".elmo_plex")
     vectors_to_plex(bert_embeddings, filename="plex_input/"+text_filename+".bert_plex")
+
+    pool = multiprocessing.Pool(5)
+    diagrams =  pool.map(lambda x: ripser(x, maxdim = 3)['dgms'], [word2vec_embeddings, glove_wiki_embeddings, glove_cc_embeddings, elmo_embeddings, bert_embeddings])
+
+    plt.figure(figsize=(25,5))
+    plt.subplot(151)
+    persim.plot_diagrams(diagrams[0])
+    plt.title("word2vec")
+
+    plt.subplot(152)
+    persim.plot_diagrams(diagrams[1])
+    plt.title("GLoVe Wiki")
+
+    plt.subplot(153)
+    persim.plot_diagrams(diagrams[2])
+    plt.title("GloVe CC")
+
+    plt.subplot(154)
+    persim.plot_diagrams(diagrams[3])
+    plt.title("ELMo")
+
+    plt.subplot(155)
+    persim.plot_diagrams(diagrams[4])
+    plt.title("BERT")
+
+    plt.savefig(text_filename+"plots.pdf")
