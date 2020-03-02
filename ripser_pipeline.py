@@ -79,14 +79,14 @@ if __name__ == "__main__":
     text_name = args.text.split("/")[-1]
     text_words = tokenize_from_file(text_filename)
 
-    print("read text of length "+len(text_words)+" words...")
+    print("read text of length "+str(len(text_words))+" words...")
 
     if args.load_numpy:
-        word2vec_embeddings = np.load(text_name+".word2vec")
-        glove_wiki_embeddings = np.load(text_name".glove_wiki")
-        glove_cc_embeddings = np.load(text_name+".glove_cc")
-        elmo_embeddings = np.load(text_name+".elmo")
-        bert_embeddings = np.load(text_name+".bert")
+        word2vec_embeddings = np.load(text_name+".word2vec.npy")
+        glove_wiki_embeddings = np.load(text_name+".glove_wiki.npy")
+        glove_cc_embeddings = np.load(text_name+".glove_cc.npy")
+        elmo_embeddings = np.load(text_name+".elmo.npy")
+        bert_embeddings = np.load(text_name+".bert.npy")
     else:
 
         #word2vec
