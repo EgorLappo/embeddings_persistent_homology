@@ -15,6 +15,8 @@ import multiprocessing
 
 import persim
 from ripser import ripser
+import matplotlib
+from matplotlib import pyplot as plt
 
 import argparse
 parser = argparse.ArgumentParser(description="embed the text as a point cloud in the embedding space")
