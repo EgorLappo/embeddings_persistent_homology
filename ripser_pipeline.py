@@ -149,10 +149,13 @@ if __name__ == "__main__":
     vectors_to_plex(elmo_embeddings, filename="plex_input/"+text_name+".elmo_plex")
     vectors_to_plex(bert_embeddings, filename="plex_input/"+text_name+".bert_plex")
 
+    print("launching ripser in parallel")
     pool = multiprocessing.Pool(5)
     diagrams =  pool.map(ripser_compute, [word2vec_embeddings, glove_wiki_embeddings, glove_cc_embeddings, elmo_embeddings, bert_embeddings])
     pool.close()
 
+
+    print("making plots")
     plt.figure(figsize=(25,5))
     plt.subplot(151)
     persim.plot_diagrams(diagrams[0])
@@ -176,6 +179,7 @@ if __name__ == "__main__":
 
     plt.savefig(text_filename+"plots.pdf")
 
+    print("writing output")
     for i, emb in enumerate(["word2vec", "glove_wiki", "glove_cc", "elmo", "bert"]):
         with open("ripser_output/"+text_name+"."+emb,"w") as f:
             for dim in diagrams[i]:
