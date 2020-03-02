@@ -1,9 +1,6 @@
-sudo apt-get install git-lfs
-git lfs install
-git lfs clone https://github.com/mmihaltz/word2vec-GoogleNews-vectors.git
-mv word2vec-GoogleNews-vectors/GoogleNews-vectors-negative300.bin.gz .
-rm -rf word2vec-GoogleNews-vectors
-
+chmod +x gdown.pl
+./gdown.pl https://drive.google.com/file/d/0B7XkCwpI5KDYNlNUTTlSS21pQmM/edit GoogleNews-vectors-negative300.bin.gz
+ 
 wget http://nlp.stanford.edu/data/glove.6B.zip
 wget http://nlp.stanford.edu/data/glove.840B.300d.zip
 wget https://s3-us-west-2.amazonaws.com/allennlp/models/elmo/2x2048_256_2048cnn_1xhighway/elmo_2x2048_256_2048cnn_1xhighway_weights.hdf5
@@ -15,7 +12,7 @@ unzip glove.840B.300d.zip
 rm glove.840B.300d.zip
 gunzip GoogleNews-vectors-negative300.bin.gz
 
-pip install numpy gensim torch allennlp transformers
+pip install numpy gensim torch allennlp transformers ripser persim matplotlib scipy 
 
 wget https://github.com/appliedtopology/javaplex/archive/4.3.4.zip
 unzip 4.3.4.zip
