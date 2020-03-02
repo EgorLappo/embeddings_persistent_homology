@@ -174,3 +174,11 @@ if __name__ == "__main__":
     plt.title("BERT")
 
     plt.savefig(text_filename+"plots.pdf")
+
+    for i, emb in enumerate(["word2vec", "glove_wiki", "glove_cc", "elmo", "bert"]):
+        with open("ripser_output/"+text_name+"."+emb,"w") as f:
+            for dim in diagrams[i]:
+                for interval in dim:
+                    f.write(str(interval[0])+" "+str(interval[1])+"\n")
+                f.write("\n")
+
