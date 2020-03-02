@@ -158,7 +158,7 @@ if __name__ == "__main__":
 
 
     print("making plots")
-    plt.figure(figsize=(25,5))
+    plt.figure(figsize=(25,8))
     plt.subplot(151)
     persim.plot_diagrams(diagrams[0])
     plt.title("word2vec")
