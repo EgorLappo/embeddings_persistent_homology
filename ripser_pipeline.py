@@ -151,6 +151,7 @@ if __name__ == "__main__":
 
     pool = multiprocessing.Pool(5)
     diagrams =  pool.map(ripser_compute, [word2vec_embeddings, glove_wiki_embeddings, glove_cc_embeddings, elmo_embeddings, bert_embeddings])
+    pool.close()
 
     plt.figure(figsize=(25,5))
     plt.subplot(151)
