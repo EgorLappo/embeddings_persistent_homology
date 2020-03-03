@@ -23,8 +23,9 @@ import argparse
 
 parser = argparse.ArgumentParser(description="embed the text as a point cloud in the embedding space")
 parser.add_argument('text', help='input text file')
-parser.add_argument('-s', '--save-numpy', action="store_true", help="save vectors in numpy format")
-parser.add_argument('-l', '--load-numpy', action="store_true", help="load vectors from numpy format")
+parser.add_argument('-e', '--embed', action="store_true", help="save embedding vectors in numpy format")
+parser.add_argument('-r', '--run', action="store_true", help="run ripser computation")
+parser.add_argument('-d', '--dim', type=int, default=2, help="max dimension to run")
 args = parser.parse_args()
 
 
@@ -75,7 +76,7 @@ def vectors_to_plex(vectors, filename):
             out.write("\n")
 
 def ripser_compute(points):
-    return ripser(points, maxdim = 3)['dgms']
+    return ripser(points, maxdim=args.dim)['dgms']
 
 if __name__ == "__main__":
     text_name = args.text
@@ -86,13 +87,7 @@ if __name__ == "__main__":
 
     print("read text of length " + str(len(text_words)) + " words...")
 
-    if args.load_numpy:
-        word2vec_embeddings = np.load(text_em + ".word2vec.npy")
-        glove_wiki_embeddings = np.load(text_em + ".glove_wiki.npy")
-        glove_cc_embeddings = np.load(text_em + ".glove_cc.npy")
-        elmo_embeddings = np.load(text_em + ".elmo.npy")
-        bert_embeddings = np.load(text_em + ".bert.npy")
-    else:
+    if args.embed:
 
         #BERT
         print("embedding with BERT...")
@@ -109,16 +104,14 @@ if __name__ == "__main__":
             outputs = [model(x) for x in tokens_tensors]
             bert_embeddings = torch.stack([x for output in outputs for x in output[0][0][1:-1]])
         
-        if args.save_numpy:    
-            np.save(text_em + ".bert", bert_embeddings.numpy())   
+        np.save(text_em + ".bert", bert_embeddings.numpy())   
 
         #word2vec
         print("embedding with word2vec...")
         word2vec_model = gensim.models.KeyedVectors.load_word2vec_format('./data/GoogleNews-vectors-negative300.bin', \
                                                                          binary=True)  
         word2vec_embeddings = get_vectors(word2vec_model, text_words)
-        if args.save_numpy:
-            np.save(text_em + ".word2vec", word2vec_embeddings)                                                           
+        np.save(text_em + ".word2vec", word2vec_embeddings)                                                           
 
         #GLoVe
         print("embedding with GloVe...")
@@ -133,9 +126,8 @@ if __name__ == "__main__":
         glove_cc_embeddings = get_vectors(glove_cc_model, text_words)
         glove_wiki_embeddings = get_vectors(glove_wiki_model, text_words)
         
-        if args.save_numpy:
-            np.save(text_em + ".glove_cc", glove_cc_embeddings)
-            np.save(text_em + ".glove_wiki", glove_wiki_embeddings)
+        np.save(text_em + ".glove_cc", glove_cc_embeddings)
+        np.save(text_em + ".glove_wiki", glove_wiki_embeddings)
 
         #ELMo
         print("embedding with ELMo")
@@ -146,51 +138,59 @@ if __name__ == "__main__":
 
         elmo_embeddings = elmo_embeddings_raw[2]
 
-        if args.save_numpy:
-            np.save(text_em + ".elmo", elmo_embeddings)
+        np.save(text_em + ".elmo", elmo_embeddings)
 
+        # prepare for Plex
+        vectors_to_plex(word2vec_embeddings, filename="plex_input/" + text_name + ".word2vec_plex")
+        vectors_to_plex(glove_cc_embeddings, filename="plex_input/" + text_name + ".glove_cc_plex")
+        vectors_to_plex(glove_wiki_embeddings, filename="plex_input/" + text_name + ".glove_wiki_plex")
+        vectors_to_plex(elmo_embeddings, filename="plex_input/" + text_name + ".elmo_plex")
+        vectors_to_plex(bert_embeddings, filename="plex_input/" + text_name + ".bert_plex")
 
-    # prepare for Plex
-    vectors_to_plex(word2vec_embeddings, filename="plex_input/" + text_name + ".word2vec_plex")
-    vectors_to_plex(glove_cc_embeddings, filename="plex_input/" + text_name + ".glove_cc_plex")
-    vectors_to_plex(glove_wiki_embeddings, filename="plex_input/" + text_name + ".glove_wiki_plex")
-    vectors_to_plex(elmo_embeddings, filename="plex_input/" + text_name + ".elmo_plex")
-    vectors_to_plex(bert_embeddings, filename="plex_input/" + text_name + ".bert_plex")
+    # load embeddings
+    word2vec_embeddings = np.load(text_em + ".word2vec.npy")
+    glove_wiki_embeddings = np.load(text_em + ".glove_wiki.npy")
+    glove_cc_embeddings = np.load(text_em + ".glove_cc.npy")
+    elmo_embeddings = np.load(text_em + ".elmo.npy")
+    bert_embeddings = np.load(text_em + ".bert.npy")
 
-    print("launching ripser in parallel")
-    pool = multiprocessing.Pool()
-    diagrams =  pool.map(ripser_compute, [word2vec_embeddings, glove_wiki_embeddings, glove_cc_embeddings, elmo_embeddings, bert_embeddings])
-    pool.close()
+    if args.run:
 
-    print("making plots")
-    plt.figure(figsize=(25,8))
-    plt.subplot(151)
-    persim.plot_diagrams(diagrams[0])
-    plt.title("word2vec")
+        print("launching ripser in parallel")
+        pool = multiprocessing.Pool()
+        diagrams = pool.map(ripser_compute, [word2vec_embeddings, glove_wiki_embeddings, 
+                     glove_cc_embeddings, elmo_embeddings, bert_embeddings])
+        pool.close()
 
-    plt.subplot(152)
-    persim.plot_diagrams(diagrams[1])
-    plt.title("GLoVe Wiki")
+        print("making plots")
+        plt.figure(figsize=(25,8))
+        plt.subplot(151)
+        persim.plot_diagrams(diagrams[0])
+        plt.title("word2vec")
 
-    plt.subplot(153)
-    persim.plot_diagrams(diagrams[2])
-    plt.title("GloVe CC")
+        plt.subplot(152)
+        persim.plot_diagrams(diagrams[1])
+        plt.title("GLoVe Wiki")
 
-    plt.subplot(154)
-    persim.plot_diagrams(diagrams[3])
-    plt.title("ELMo")
+        plt.subplot(153)
+        persim.plot_diagrams(diagrams[2])
+        plt.title("GloVe CC")
 
-    plt.subplot(155)
-    persim.plot_diagrams(diagrams[4])
-    plt.title("BERT")
+        plt.subplot(154)
+        persim.plot_diagrams(diagrams[3])
+        plt.title("ELMo")
 
-    plt.savefig(text_results + "-plots.pdf")
+        plt.subplot(155)
+        persim.plot_diagrams(diagrams[4])
+        plt.title("BERT")
 
-    print("writing output")
-    for i, emb in enumerate(["word2vec", "glove_wiki", "glove_cc", "elmo", "bert"]):
-        with open(text_results + "." + emb,"w") as f:
-            for dim in diagrams[i]:
-                for interval in dim:
-                    f.write(str(interval[0])+" "+str(interval[1])+"\n")
-                f.write("\n")
+        plt.savefig(text_results + "-plots.pdf")
+
+        print("writing output")
+        for i, emb in enumerate(["word2vec", "glove_wiki", "glove_cc", "elmo", "bert"]):
+            with open(text_results + "." + emb,"w") as f:
+                for dim in diagrams[i]:
+                    for interval in dim:
+                        f.write(str(interval[0])+" "+str(interval[1])+"\n")
+                    f.write("\n")
 
