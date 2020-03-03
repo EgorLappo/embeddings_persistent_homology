@@ -21,7 +21,7 @@ public class plex_java {
 		int numLandmarkPoints = 70;
 		double maxDistance = 0.1;
 
-		Scanner sc = new Scanner(new BufferedReader(new FileReader("test_word2vec_plex")));
+		Scanner sc = new Scanner(new BufferedReader(new FileReader("plex_input/test_word2vec_plex")));
 		int rows = 0;
 		int columns = 0;
 		while(sc.hasNextLine()) {
@@ -36,7 +36,7 @@ public class plex_java {
 		//System.out.println("Preread the point cloud!");
 
 		// read in the data
-		Scanner sc2 = new Scanner(new BufferedReader(new FileReader("test_word2vec_plex")));
+		Scanner sc2 = new Scanner(new BufferedReader(new FileReader("plex_input/test_word2vec_plex")));
 		while(sc2.hasNextLine()) {
          	for (int i=0; i<points.length; i++) {
 	            String[] line = sc2.nextLine().trim().split(" ");

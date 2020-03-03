@@ -23,8 +23,8 @@ import argparse
 
 parser = argparse.ArgumentParser(description="embed the text as a point cloud in the embedding space")
 parser.add_argument('text', help='input text file')
-parser.add_argument('-s', '--save_numpy', action="store_true", help="save vectors in numpy format")
-parser.add_argument('-l', '--load_numpy', action="store_true", help="load vectors from numpy format")
+parser.add_argument('-s', '--save-numpy', action="store_true", help="save vectors in numpy format")
+parser.add_argument('-l', '--load-numpy', action="store_true", help="load vectors from numpy format")
 args = parser.parse_args()
 
 
@@ -134,7 +134,7 @@ if __name__ == "__main__":
         #BERT
         print("embedding with GloVe...")
         tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-        with open(text_em, "r") as f:
+        with open(text_filename, "r") as f:
             text = f.read()
         tokenized_text = tokenizer.tokenize(text)
         indexed_tokens = tokenizer.convert_tokens_to_ids(tokenized_text)
