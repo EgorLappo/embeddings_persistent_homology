@@ -2,7 +2,7 @@
 conda env create -f environment.yml
 conda activate word-homology
 
-# Downliad javaplex
+# Download javaplex
 cd plex
 wget https://github.com/appliedtopology/javaplex/archive/4.3.4.zip
 unzip 4.3.4.zip
