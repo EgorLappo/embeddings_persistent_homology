@@ -39,7 +39,7 @@ def make_plot(y):
 if __name__ == "__main__":
     text_name = args.text
     text_em = "embeddings/" + args.text
-    text_results = "ripser_output/" + args.text
+    text_results = "silhouette_output/" + args.text
     text_filename = "texts/" + args.text
 
     # load embeddings
