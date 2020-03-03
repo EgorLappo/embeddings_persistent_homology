@@ -26,6 +26,7 @@ parser.add_argument('text', help='input text file')
 parser.add_argument('-e', '--embed', action="store_true", help="save embedding vectors in numpy format")
 parser.add_argument('-r', '--run', action="store_true", help="run ripser computation")
 parser.add_argument('-d', '--dim', type=int, default=2, help="max dimension to run")
+parser.add_argument('-n', '--sample', type=int, default=100, help="points to subsample")
 args = parser.parse_args()
 
 
@@ -76,12 +77,12 @@ def vectors_to_plex(vectors, filename):
             out.write("\n")
 
 def ripser_compute(points):
-    return ripser(points, maxdim=args.dim)['dgms']
+    return ripser(points, maxdim=args.dim, n_perm=args.sample)['dgms']
 
 if __name__ == "__main__":
     text_name = args.text
     text_em = "embeddings/" + args.text
-    text_result = "ripser_output/" + args.text
+    text_results = "ripser_output/" + args.text
     text_filename = "texts/" + args.text
     text_words = tokenize_from_file(text_filename)
 
@@ -184,7 +185,7 @@ if __name__ == "__main__":
         persim.plot_diagrams(diagrams[4])
         plt.title("BERT")
 
-        plt.savefig(text_results + "-plots.pdf")
+        plt.savefig(text_results + "-plots.pdf", dpi=500)
 
         print("writing output")
         for i, emb in enumerate(["word2vec", "glove_wiki", "glove_cc", "elmo", "bert"]):
