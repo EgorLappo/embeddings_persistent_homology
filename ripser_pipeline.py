@@ -94,6 +94,24 @@ if __name__ == "__main__":
         bert_embeddings = np.load(text_em + ".bert.npy")
     else:
 
+        #BERT
+        print("embedding with BERT...")
+        tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+        with open(text_filename, "r") as f:
+            text = f.read()
+        tokenized_text = [tokenizer.tokenize('[CLS] ' + x + ' [SEP]') for x in text.split('.')]
+        indexed_tokens = [tokenizer.convert_tokens_to_ids(x) for x in tokenized_text]
+        tokens_tensors = [torch.tensor([x]) for x in indexed_tokens]
+        model = BertModel.from_pretrained('bert-base-uncased')
+        model.eval()
+
+        with torch.no_grad():
+            outputs = [model(x) for x in tokens_tensors]
+            bert_embeddings = torch.stack([x for output in outputs for x in output[0][0][1:-1]])
+        
+        if args.save_numpy:    
+            np.save(text_em + ".bert", bert_embeddings.numpy())   
+
         #word2vec
         print("embedding with word2vec...")
         word2vec_model = gensim.models.KeyedVectors.load_word2vec_format('./data/GoogleNews-vectors-negative300.bin', \
@@ -131,23 +149,6 @@ if __name__ == "__main__":
         if args.save_numpy:
             np.save(text_em + ".elmo", elmo_embeddings)
 
-        #BERT
-        print("embedding with GloVe...")
-        tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-        with open(text_filename, "r") as f:
-            text = f.read()
-        tokenized_text = tokenizer.tokenize(text)
-        indexed_tokens = tokenizer.convert_tokens_to_ids(tokenized_text)
-        tokens_tensor = torch.tensor([indexed_tokens])
-        model = BertModel.from_pretrained('bert-base-uncased')
-        model.eval()
-
-        with torch.no_grad():
-            outputs = model(tokens_tensor)
-            bert_embeddings = outputs[0][0]
-        
-        if args.save_numpy:    
-            np.save(text_em + ".bert", bert_embeddings.numpy())   
 
     # prepare for Plex
     vectors_to_plex(word2vec_embeddings, filename="plex_input/" + text_name + ".word2vec_plex")
