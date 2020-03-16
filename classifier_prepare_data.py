@@ -4,6 +4,7 @@ import re
 import os
 from os import path
 import random
+from math import inf
 
 from sklearn.datasets import make_blobs
 from sklearn.cluster import KMeans
@@ -26,12 +27,10 @@ from ripser import ripser
 import matplotlib
 from matplotlib import pyplot as plt
 
-
-import tqdm
-
 import pandas as pd
 
 import argparse
+import tqdm
 
 
 
@@ -91,9 +90,10 @@ TIME_DISC = args.t
 def ripser_compute(points):
     diagrams = ripser(points, maxdim=2, n_perm=args.sample)['dgms']
     norm = pdist(points).max()
-    for intervals in [diagrams[1], diagrams[2]]:
+    for intervals in diagrams:
         arr = np.zeros(TIME_DISC)
         for start, end in intervals:
+            if end == inf: continue 
             for i in range(int(start / norm * TIME_DISC), int(end / norm * TIME_DISC)):
                 arr[i] += 1
         yield arr
@@ -130,9 +130,9 @@ def embed_poem(x):
 
 def compute_results(xy):
     x, y = xy
-    h1, h2 = ripser_compute(x)
+    h0, h1, h2 = ripser_compute(x)
     sil = silhouette_compute(x)
-    return (sil, h1, h2), y
+    return (sil, h0, h1, h2), y
 
 
 if __name__ == "__main__":
@@ -156,18 +156,21 @@ if __name__ == "__main__":
     print(f'embedded {sum(y == 1 for x, y in embedded)} poems') 
 
     silhouette_results = []
+    ripser_h0_results = []
     ripser_h1_results = []
     ripser_h2_results = []
 
     for itr, (result, y) in enumerate(tqdm.tqdm(
                                 pool.imap(compute_results, embedded), 
                                 desc='computing results', total=len(embedded))):
-        sil, h1, h2 = result
+        sil, h0, h1, h2 = result
         silhouette_results.append((sil, y))
+        ripser_h0_results.append((h0, y))
         ripser_h1_results.append((h1, y))
         ripser_h2_results.append((h2, y))
         if itr % 10: continue
         for location, data in [('silhouette_data', silhouette_results),
+                               ('ripser_data_h0', ripser_h0_results),
                                ('ripser_data_h1', ripser_h1_results),
                                ('ripser_data_h2', ripser_h2_results)]:
             scaled_splits = [int(len(data) * s) for s in args.split]
