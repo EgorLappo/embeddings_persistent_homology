@@ -159,21 +159,22 @@ if __name__ == "__main__":
     ripser_h1_results = []
     ripser_h2_results = []
 
-    for result, y in tqdm.tqdm(pool.imap(compute_results, embedded), desc='computing results', total=len(embedded)):
+    for itr, (result, y) in enumerate(tqdm.tqdm(
+                                pool.imap(compute_results, embedded), 
+                                desc='computing results', total=len(embedded))):
         sil, h1, h2 = result
-        silhouette_results.append(sil)
-        ripser_h1_results.append(h1)
-        ripser_h2_results.append(h2)
+        silhouette_results.append((sil, y))
+        ripser_h1_results.append((h1, y))
+        ripser_h2_results.append((h2, y))
+        if itr % 10: continue
+        for location, data in [('silhouette_data', silhouette_results),
+                               ('ripser_data_h1', ripser_h1_results),
+                               ('ripser_data_h2', ripser_h2_results)]:
+            scaled_splits = [int(len(data) * s) for s in args.split]
+            cut = [sum(scaled_splits[:i]) for i in range(4)]
+            np.save(f'{location}/train.npy', data[cut[0]:cut[1]])
+            np.save(f'{location}/val.npy', data[cut[1]:cut[2]])
+            np.save(f'{location}/test.npy', data[cut[2]:cut[3]])
 
     pool.close()
-
-    scaled_splits = [int(len(embedded) * s) for s in args.split]
-    cut = [sum(scaled_splits[:i]) for i in range(4)]
-
-    for location, data in [('silhouette_data', silhouette_results),
-                           ('ripser_data_h1', ripser_h1_results),
-                           ('ripser_data_h2', ripser_h2_results)]:
-        np.save(f'{location}/train.npy', data[cut[0]:cut[1]])
-        np.save(f'{location}/val.npy', data[cut[1]:cut[2]])
-        np.save(f'{location}/test.npy', data[cut[2]:cut[3]])
 
