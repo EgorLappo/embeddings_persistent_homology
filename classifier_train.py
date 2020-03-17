@@ -22,7 +22,7 @@ class SeqCNN(nn.Module):
         x = F.relu(self.f1(x))
         x = self.drop(x)
         x = self.f2(x)
-        return F.softmax(x, dim=1), sum(x.pow(2).sum() for x in self.parameters())
+        return x, sum(x.pow(2).sum() for x in self.parameters())
 
 
 parser = argparse.ArgumentParser(description="train on sequences")
