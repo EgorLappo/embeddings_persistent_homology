@@ -27,7 +27,7 @@ class SeqCNN(nn.Module):
 
 parser = argparse.ArgumentParser(description="train on sequences")
 parser.add_argument('data', type=str, help='data directory')
-parser.add_argument('--epochs', type=int, help='number of epochs')
+parser.add_argument('--epochs', type=int, default=500, help='number of epochs')
 parser.add_argument('--test', action='store_true', help='run on test set')
 args = parser.parse_args()
 
@@ -53,6 +53,10 @@ def evaluate(data):
     Y_hat, l2 = model(X.cuda().float())
     return np.round(100 * (torch.argmax(Y_hat, dim=1) == Y.cuda()).sum().item() / Y.shape[0], 2)
 
+avg_short_val = 1.
+avg_long_val = 1.
+long_decay = 0.05
+short_decay = 0.1
 
 for i in range(args.epochs):
     model.train()
@@ -65,7 +69,12 @@ for i in range(args.epochs):
         loss.backward()
         opt.step()
     model.eval()
-    print(f'Epoch {i} - Train Loss: {get_loss(train).item()}, Validation Loss: {get_loss(val).item()}')
+    val_loss = get_loss(val).item()
+    avg_short_val = (1 - short_decay) * avg_short_val + short_decay * val_loss
+    avg_long_val = (1 - long_decay) * avg_long_val + long_decay * val_loss
+    print(f'Epoch {i} - Train Loss: {get_loss(train).item()}, Validation Loss: {val_loss}')
+    if avg_long_val < avg_short_val:
+        break
 
 print()
 print(f'Train Accuracy: {evaluate(train)}%')
