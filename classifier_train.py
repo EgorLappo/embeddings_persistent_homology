@@ -22,7 +22,7 @@ class SeqCNN(nn.Module):
         x = F.relu(self.f1(x))
         x = self.drop(x)
         x = self.f2(x)
-        return F.softmax(x, dim=1), sum(x.pow(2).sum() for x in self.parameters())
+        return x, sum(x.pow(2).sum() for x in self.parameters())
 
 
 parser = argparse.ArgumentParser(description="train on sequences")
@@ -52,6 +52,7 @@ def evaluate(data):
     X, Y = map(torch.tensor, zip(*data))
     Y_hat, l2 = model(X.cuda().float())
     return np.round(100 * (torch.argmax(Y_hat, dim=1) == Y.cuda()).sum().item() / Y.shape[0], 2)
+
 
 avg_short_val = 1.
 avg_long_val = 1.
