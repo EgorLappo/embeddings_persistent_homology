@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.nn as nn
@@ -35,7 +36,7 @@ train = np.load(f'{args.data}/train.npy', allow_pickle=True)
 val = np.load(f'{args.data}/val.npy', allow_pickle=True)
 print(f"Found {train.shape[0]} training and {val.shape[0]} validation data points.")
 model = SeqCNN(train[0][0].shape[0]).cuda()
-opt = torch.optim.Adam(model.parameters(), lr=1e-4)
+opt = torch.optim.Adam(model.parameters(), lr=5e-4)
 batch = 100
 lam = 0.001
 loss_fn = nn.CrossEntropyLoss().cuda()
@@ -58,6 +59,7 @@ avg_short_val = 1.
 avg_long_val = 1.
 long_decay = 0.05
 short_decay = 0.1
+losses = [[], []]
 
 for i in range(args.epochs):
     model.train()
@@ -70,12 +72,22 @@ for i in range(args.epochs):
         loss.backward()
         opt.step()
     model.eval()
+    train_loss = get_loss(train).item()
     val_loss = get_loss(val).item()
     avg_short_val = (1 - short_decay) * avg_short_val + short_decay * val_loss
     avg_long_val = (1 - long_decay) * avg_long_val + long_decay * val_loss
-    print(f'Epoch {i} - Train Loss: {get_loss(train).item()}, Validation Loss: {val_loss}')
+    losses = [losses[0] + [train_loss], losses[1] + [val_loss]]
+    print(f'Epoch {i} - Train Loss: {train_loss}, Validation Loss: {val_loss}')
     if avg_long_val < avg_short_val:
         break
+
+plt.figure()
+plt.xlabel('Epoch')
+plt.ylabel('Loss')
+plt.plot(losses[0], label='training loss')
+plt.plot(losses[1], label='validation loss')
+plt.legend()
+plt.savefig(f'{args.data}-loss.png')
 
 print()
 print(f'Train Accuracy: {evaluate(train)}%')
