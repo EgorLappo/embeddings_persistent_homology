@@ -1,6 +1,10 @@
 # Plot Holes and Text Topology
 ### CS224N Final Project
 
+READ THE PROJECT REPORT HERE: 
+
+[https://github.com/EgorLappo/embeddings_persistent_homology/blob/master/report.pdf](https://github.com/EgorLappo/embeddings_persistent_homology/blob/master/report.pdf)
+
 ----
 Texts in the `/texts` folder:
 
